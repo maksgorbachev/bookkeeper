@@ -37,10 +37,10 @@ class SQLiteRepository(AbstractRepository[T]):
     def get_all(self, where: dict[str, Any] | None = None) -> list[T]:
         with sqlite3.connect(self.db_file) as con:
             cursor = con.cursor()
-            if where == None:
+            if where is None:
                 cursor.execute(f'SELECT rowid,  * FROM {self.table_name}')
                 res = [self.data_type(*(list(data[1:]) + [data[0]])) for data in cursor.fetchall()]
-            elif next(iter(where.values())) == None:
+            elif next(iter(where.values())) is None:
                 cursor.execute(f'SELECT rowid, * FROM {self.table_name} WHERE {next(iter(where.keys()))} IS NULL')
                 res = [self.data_type(*(list(data[1:]) + [data[0]])) for data in cursor.fetchall()]
             else:

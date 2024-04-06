@@ -1,19 +1,15 @@
 from PySide6.QtWidgets import QMainWindow, QWidget
-from PySide6.QtUiTools import QUiLoader
 
-from bookkeeper.models.expense import Expense
-from bookkeeper.models.category import Category
-from bookkeeper.repository.abstract_repository import AbstractRepository
-
-from bookkeeper.view.table_widget import TableWidget
-from bookkeeper.view.budget_widget import BudgetWidget
 from bookkeeper.view.add_widget import AddWidget
+from bookkeeper.view.budget_widget import BudgetWidget
+from bookkeeper.view.table_widget import TableWidget
 
 
 class BudgetMainWindow(QMainWindow):
     def __init__(
             self,
             table_widget: TableWidget,
+            budget_widget: BudgetWidget,
             add_widget: AddWidget,
     ):
         super().__init__()
@@ -28,7 +24,8 @@ class BudgetMainWindow(QMainWindow):
         self._table.setGeometry(5, height, self._table.width(), self._table.height())
 
         height += self._table.height() + 25
-        self._budget = BudgetWidget(parent=central_widget)
+        self._budget = budget_widget
+        self._budget.setParent(central_widget)
         self._budget.setGeometry(5, height, self._budget.width(), self._budget.height())
 
         height += self._budget.height() + 55

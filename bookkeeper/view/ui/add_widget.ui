@@ -153,6 +153,9 @@
       <height>24</height>
      </rect>
     </property>
+    <property name="maximum">
+     <number>99999999</number>
+    </property>
    </widget>
    <widget class="QDateTimeEdit" name="dateTimeEdit">
     <property name="geometry">
@@ -162,6 +165,13 @@
       <width>141</width>
       <height>25</height>
      </rect>
+    </property>
+    <property name="date">
+     <date>
+      <year>2024</year>
+      <month>1</month>
+      <day>1</day>
+     </date>
     </property>
    </widget>
   </widget>

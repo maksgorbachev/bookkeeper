@@ -19,7 +19,6 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QDateTimeEdit, QGroupBox
     QLabel, QPushButton, QSizePolicy, QSpinBox,
     QTextEdit, QWidget)
 
-
 class Ui_add_widget(object):
     def setupUi(self, add_widget):
         if not add_widget.objectName():
@@ -60,9 +59,11 @@ class Ui_add_widget(object):
         self.spb_amount = QSpinBox(self.group)
         self.spb_amount.setObjectName(u"spb_amount")
         self.spb_amount.setGeometry(QRect(120, 30, 111, 24))
+        self.spb_amount.setMaximum(99999999)
         self.dateTimeEdit = QDateTimeEdit(self.group)
         self.dateTimeEdit.setObjectName(u"dateTimeEdit")
         self.dateTimeEdit.setGeometry(QRect(120, 95, 141, 25))
+        self.dateTimeEdit.setDate(QDate(2024, 1, 1))
 
         self.retranslateUi(add_widget)
 
