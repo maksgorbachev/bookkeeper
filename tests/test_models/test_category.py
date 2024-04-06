@@ -18,7 +18,7 @@ def test_create_object():
     c = Category('name')
     assert c.name == 'name'
     assert c.pk == 0
-    assert c.parent is None
+    assert c.parent == 0
 
     c = Category(name='name', parent=1, pk=2)
     assert c.name == 'name'

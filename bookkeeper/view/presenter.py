@@ -1,44 +1,70 @@
+# pylint: disable=missing-module-docstring
 from bookkeeper.models.expense import Expense
 from bookkeeper.models.category import Category
 from bookkeeper.repository.sqlite_repository import SQLiteRepository
 
-from bookkeeper.view import AddWidget, BudgetWidget, BudgetMainWindow, CategoryInspector, TableWidget
+from bookkeeper.view.add_widget import AddWidget
+from bookkeeper.view.budget_widget import BudgetWidget
+from bookkeeper.view.budget_mainwindow import BudgetMainWindow
+from bookkeeper.view.category_widget import CategoryWidget
+from bookkeeper.view.table_widget import TableWidget
 
 
 class Presenter:
+    """
+    Класс менеджер, в его задачу входит создание репозиториев и гуи.
+    Кроме этого он управляет события в разных частях гуи,
+    обновляя остальные виджеты по требованию
+    """
     def __init__(self, db_file: str):
-        self.expense_repo = SQLiteRepository[Expense](db_file, Expense)
-        self.category_repo = SQLiteRepository[Category](db_file, Category)
+        self._expense_repo = SQLiteRepository[Expense](db_file, Expense)
+        self._category_repo = SQLiteRepository[Category](db_file, Category)
 
-        self.table_widget = TableWidget(self.category_repo, self.expense_repo)
-        self.table_widget.update_table()
+        self._table_widget = TableWidget(self._category_repo, self._expense_repo)
+        self._table_widget.update_table()
 
-        self.budget = BudgetWidget(limit=1000, expenses=self.expense_repo)
-        self.budget.update_widget()
+        self._budget = BudgetWidget(limit=5000, repo_expense=self._expense_repo)
+        self._budget.update_widget()
 
-        self.add_widget = AddWidget(
-            self.category_repo,
-            self.expense_repo,
+        self._add_widget = AddWidget(
+            self._category_repo,
+            self._expense_repo,
             self.open_category_inspector,
             self.add_new_expense,
         )
-        self.category_inspector_closed()
+        self._category_inspector_closed()
 
-        self.main_window = BudgetMainWindow(self.table_widget, self.budget, self.add_widget)
-
-        self.category_inspector = CategoryInspector(
-            self.category_repo,
-            self.category_inspector_closed,
+        self._main_window = BudgetMainWindow(
+            self._table_widget,
+            self._budget,
+            self._add_widget,
         )
 
-        self.main_window.show()
+        self._category_inspector = CategoryWidget(
+            self._category_repo,
+            self._category_inspector_closed,
+        )
+
+        self._main_window.show()
 
     def open_category_inspector(self):
-        self.category_inspector.show_widget()
+        """
+        Когда в виджете добавления операции происходит нажатие на кнопку
+        добавления категории, то виджет вызывает эту функцию для запуска
+        виджета категорий.
+        Используется вместо стандартного механизма слот-сигнал.
+        """
+        self._category_inspector.show_widget()
 
-    def category_inspector_closed(self):
-        self.add_widget.update_widget()
+    def _category_inspector_closed(self):
+        self._add_widget.update_widget()
 
     def add_new_expense(self):
-        self.table_widget.update_table()
-        self.budget.update_widget()
+        """
+        Когда в виджете добавления операции происходит нажатие на кнопку
+        добавления операции, то виджет вызывает эту функцию для чтобы
+        менеджер обновил другие виджеты.
+        Используется вместо стандартного механизма слот-сигнал.
+        """
+        self._table_widget.update_table()
+        self._budget.update_widget()

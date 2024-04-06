@@ -1,11 +1,15 @@
-from PySide6.QtWidgets import QMainWindow, QWidget
+# pylint: disable=missing-module-docstring
+from PySide6.QtWidgets import QMainWindow, QWidget  # pylint: disable=no-name-in-module
 
 from bookkeeper.view.add_widget import AddWidget
 from bookkeeper.view.budget_widget import BudgetWidget
 from bookkeeper.view.table_widget import TableWidget
 
 
-class BudgetMainWindow(QMainWindow):
+class BudgetMainWindow(QMainWindow):  # pylint: disable=too-few-public-methods
+    """
+    Виджет главного окна, просто содержит и отрисовывает все части интерфейса
+    """
     def __init__(
             self,
             table_widget: TableWidget,
@@ -31,7 +35,12 @@ class BudgetMainWindow(QMainWindow):
         height += self._budget.height() + 55
         self._add_widget = add_widget
         self._add_widget.setParent(central_widget)
-        self._add_widget.setGeometry(5, height, self._add_widget.width(), self._add_widget.height())
+        self._add_widget.setGeometry(
+            5,
+            height,
+            self._add_widget.width(),
+            self._add_widget.height(),
+        )
 
         self.setCentralWidget(central_widget)
         self.show()

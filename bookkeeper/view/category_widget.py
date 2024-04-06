@@ -1,70 +1,89 @@
+# pylint: disable=missing-module-docstring
 from typing import Callable
 
-from PySide6.QtWidgets import QWidget, QTreeWidgetItem
+from PySide6.QtWidgets import (  # pylint: disable=no-name-in-module
+    QWidget,
+    QTreeWidgetItem,
+)
 
-from bookkeeper.view.ui.ui_category_widget import Ui_category_widget
+from bookkeeper.view.ui.ui_category_widget import UiCategoryWidget
 from bookkeeper.models.category import Category
 from bookkeeper.repository.abstract_repository import AbstractRepository
 
 
-class CategoryInspector(QWidget):
+class CategoryWidget(QWidget):
+    """
+    Виджет для отображения и управления деревом категорий
+    """
     def __init__(
             self,
-            repo: AbstractRepository[Category],
-            handler: Callable,
+            repo_category: AbstractRepository[Category],
+            handler_closed: Callable,
     ):
         super().__init__()
-        self._repo_category = repo
+        self._category = repo_category
         self._cache_category_id: dict[str, int] = {}
-        self._handler = handler
-        self.ui = Ui_category_widget()
-        self.ui.setupUi(self)
+        self._handler_closed = handler_closed
+        self._ui = UiCategoryWidget()
+        self._ui.setup_ui(self)
 
-        self.ui.pb_add_category.clicked.connect(self._handle_button_add)
+        self._ui.pb_add_category.clicked.connect(self._handle_button_add)
 
         self._update_cache_categories()
 
     def _build_tree_category(self):
-        self.ui.tree_category.clear()
+        self._ui.tree_category.clear()
         tree_widgets: list[QTreeWidgetItem] = []
-        for _ in self._repo_category.get_all():
+        for _ in self._category.get_all():
             tree_widgets.append(QTreeWidgetItem())
-        for i, row in enumerate(self._repo_category.get_all()):
+        for i, row in enumerate(self._category.get_all()):
             tree_widgets[i].addChildren(
-                [tree_widgets[cat.pk-1] for cat in row.get_subcategories(self._repo_category)])
+                [
+                    tree_widgets[cat.pk - 1]
+                    for cat in row.get_subcategories(self._category)
+                ]
+            )
             tree_widgets[i].setText(0, row.name)
 
-        self.ui.tree_category.setColumnCount(1)
-        self.ui.tree_category.addTopLevelItems(tree_widgets)
+        self._ui.tree_category.setColumnCount(1)
+        self._ui.tree_category.addTopLevelItems(tree_widgets)
 
     def _update_cache_categories(self):
-        categories: list[Category] = self._repo_category.get_all()
+        categories: list[Category] = self._category.get_all()
         self._cache_category_id = {
             category.name: category.pk for category in categories
         }
-        self.ui.cmb_category.clear()
-        self.ui.led_name.clear()
-        self.ui.cmb_category.addItems(self._cache_category_id.keys())
+        self._ui.cmb_category.clear()
+        self._ui.led_name.clear()
+        self._ui.cmb_category.addItems(self._cache_category_id.keys())
 
     def show_widget(self):
+        """
+        Так как виджет показывается не в главном окне,
+        то для него нужно отдельная функция для отрисовки на экране
+        """
         self._build_tree_category()
 
-        self.ui.cmb_category.clear()
-        self.ui.cmb_category.addItems(self._cache_category_id.keys())
+        self._ui.cmb_category.clear()
+        self._ui.cmb_category.addItems(self._cache_category_id.keys())
 
         self.show()
 
     def _handle_button_add(self):
-        name = self.ui.led_name.text()
-        parent = self.ui.cmb_category.currentText()
+        name = self._ui.led_name.text()
+        parent = self._ui.cmb_category.currentText()
         parent_id = self._cache_category_id.get(parent)
 
         category = Category(name=name, parent=parent_id)
-        self._repo_category.add(category)
+        self._category.add(category)
 
         self._update_cache_categories()
         self._build_tree_category()
 
-    def closeEvent(self, unused_event):
-        self._handler()
+    def closeEvent(self, unused_event):  # pylint: disable=invalid-name
+        """
+        Переопределенный метод для отработки события "Закрытия окна"
+        Нужен, потому что необходимо обновить другие виджеты, после закрытия этого окна.
+        """
+        self._handler_closed()
         self.close()
