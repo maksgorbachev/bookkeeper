@@ -18,6 +18,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QHeaderView, QLabel, QSizePolicy,
     QTableWidget, QTableWidgetItem, QWidget)
 
+
 class Ui_WidgetTable(object):
     def setupUi(self, WidgetTable):
         if not WidgetTable.objectName():
@@ -26,7 +27,7 @@ class Ui_WidgetTable(object):
         WidgetTable.setMinimumSize(QSize(670, 390))
         WidgetTable.setMaximumSize(QSize(670, 390))
         self.table_widget = QTableWidget(WidgetTable)
-        if (self.table_widget.columnCount() < 4):
+        if self.table_widget.columnCount() < 4:
             self.table_widget.setColumnCount(4)
         __qtablewidgetitem = QTableWidgetItem()
         self.table_widget.setHorizontalHeaderItem(0, __qtablewidgetitem)

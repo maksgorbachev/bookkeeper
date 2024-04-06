@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QFrame, QGroupBox,
     QSizePolicy, QTreeWidget, QTreeWidgetItem, QVBoxLayout,
     QWidget)
 
+
 class Ui_category_widget(object):
     def setupUi(self, category_widget):
         if not category_widget.objectName():

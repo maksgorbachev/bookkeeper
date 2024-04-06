@@ -18,6 +18,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QHeaderView, QLabel, QSizePolicy,
     QTableWidget, QTableWidgetItem, QWidget)
 
+
 class Ui_budget_widget(object):
     def setupUi(self, budget_widget):
         if not budget_widget.objectName():
@@ -29,13 +30,13 @@ class Ui_budget_widget(object):
         self.lbl.setObjectName(u"lbl")
         self.lbl.setGeometry(QRect(10, 0, 150, 20))
         self.table_widget = QTableWidget(budget_widget)
-        if (self.table_widget.columnCount() < 2):
+        if self.table_widget.columnCount() < 2:
             self.table_widget.setColumnCount(2)
         __qtablewidgetitem = QTableWidgetItem()
         self.table_widget.setHorizontalHeaderItem(0, __qtablewidgetitem)
         __qtablewidgetitem1 = QTableWidgetItem()
         self.table_widget.setHorizontalHeaderItem(1, __qtablewidgetitem1)
-        if (self.table_widget.rowCount() < 3):
+        if self.table_widget.rowCount() < 3:
             self.table_widget.setRowCount(3)
         __qtablewidgetitem2 = QTableWidgetItem()
         self.table_widget.setVerticalHeaderItem(0, __qtablewidgetitem2)

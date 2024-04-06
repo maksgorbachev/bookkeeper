@@ -15,10 +15,12 @@ class Presenter:
         self.expense_repo = SQLiteRepository[Expense](db_file, Expense)
         self.category_repo = SQLiteRepository[Category](db_file, Category)
 
-        self.table_widget = TableWidget()
-        self.table_widget.fill_table(self.expense_repo.get_all())
+        self.table_widget = TableWidget(self.category_repo, self.expense_repo)
+        self.table_widget.update_table()
 
         self.add_widget = AddWidget(
+            self.category_repo,
+            self.expense_repo,
             self.open_category_inspector,
             self.add_new_expense,
         )
@@ -37,12 +39,7 @@ class Presenter:
         self.category_inspector.show_widget()
 
     def category_inspector_closed(self):
-        self.add_widget.fill_combobox_categories(
-            {
-                category.name: category.pk for category in self.category_repo.get_all()
-            }
-        )
+        self.add_widget.update_widget()
 
     def add_new_expense(self, expense: Expense):
-        self.expense_repo.add(expense)
-        self.table_widget.add_expense(expense)
+        self.table_widget.update_table()

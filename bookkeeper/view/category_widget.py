@@ -27,7 +27,7 @@ class CategoryInspector(QWidget):
     def _build_tree_category(self):
         self.ui.tree_category.clear()
         tree_widgets: list[QTreeWidgetItem] = []
-        for row in self._repo_category.get_all():
+        for _ in self._repo_category.get_all():
             tree_widgets.append(QTreeWidgetItem())
         for i, row in enumerate(self._repo_category.get_all()):
             tree_widgets[i].addChildren(

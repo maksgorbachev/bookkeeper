@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QDateTimeEdit, QGroupBox
     QLabel, QPushButton, QSizePolicy, QSpinBox,
     QTextEdit, QWidget)
 
+
 class Ui_add_widget(object):
     def setupUi(self, add_widget):
         if not add_widget.objectName():
