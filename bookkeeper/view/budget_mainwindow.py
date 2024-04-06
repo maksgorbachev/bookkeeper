@@ -11,7 +11,11 @@ from bookkeeper.view.add_widget import AddWidget
 
 
 class BudgetMainWindow(QMainWindow):
-    def __init__(self, esp_repo: AbstractRepository[Expense], cate_repo: AbstractRepository[Category]):
+    def __init__(
+            self,
+            table_widget: TableWidget,
+            add_widget: AddWidget,
+    ):
         super().__init__()
         self.setFixedSize(680, 800)
         self.setWindowTitle("The Bookkeeper App")
@@ -19,7 +23,8 @@ class BudgetMainWindow(QMainWindow):
         central_widget: QWidget = QWidget(self)
         central_widget.setGeometry(0, 0, self.width(), self.height())
         height = 5
-        self._table = TableWidget(parent=central_widget)
+        self._table = table_widget
+        self._table.setParent(central_widget)
         self._table.setGeometry(5, height, self._table.width(), self._table.height())
 
         height += self._table.height() + 25
@@ -27,7 +32,8 @@ class BudgetMainWindow(QMainWindow):
         self._budget.setGeometry(5, height, self._budget.width(), self._budget.height())
 
         height += self._budget.height() + 55
-        self._add_widget = AddWidget(parent=central_widget)
+        self._add_widget = add_widget
+        self._add_widget.setParent(central_widget)
         self._add_widget.setGeometry(5, height, self._add_widget.width(), self._add_widget.height())
 
         self.setCentralWidget(central_widget)

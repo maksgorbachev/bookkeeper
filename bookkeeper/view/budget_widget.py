@@ -1,7 +1,4 @@
-from PySide6.QtWidgets import QApplication, QMainWindow
-from PySide6.QtCore import QFile
-from PySide6.QtWidgets import QMainWindow, QTableWidgetItem, QWidget, QTreeWidgetItem
-from PySide6.QtUiTools import QUiLoader
+from PySide6.QtWidgets import QTableWidgetItem, QWidget
 
 from bookkeeper.models.expense import Expense
 from bookkeeper.models.category import Category
@@ -17,5 +14,5 @@ class BudgetWidget(QWidget):
         self.ui.setupUi(self)
         self.setParent(parent)
 
-        self.ui.table_widget.setColumnWidth(0, 300)
-        self.ui.table_widget.setColumnWidth(1, 300)
+        self.ui.table_widget.setColumnWidth(0, 270)
+        self.ui.table_widget.setColumnWidth(1, 270)

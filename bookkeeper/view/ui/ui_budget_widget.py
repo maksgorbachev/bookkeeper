@@ -61,10 +61,10 @@ class Ui_budget_widget(object):
         ___qtablewidgetitem1 = self.table_widget.horizontalHeaderItem(1)
         ___qtablewidgetitem1.setText(QCoreApplication.translate("budget_widget", u"\u0411\u044e\u0434\u0436\u0435\u0442", None));
         ___qtablewidgetitem2 = self.table_widget.verticalHeaderItem(0)
-        ___qtablewidgetitem2.setText(QCoreApplication.translate("budget_widget", u"\u0414\u0435\u043d\u044c", None));
+        ___qtablewidgetitem2.setText(QCoreApplication.translate("budget_widget", u"\u0422\u0435\u043a\u0443\u0449\u0438\u0439 \u0434\u0435\u043d\u044c", None));
         ___qtablewidgetitem3 = self.table_widget.verticalHeaderItem(1)
-        ___qtablewidgetitem3.setText(QCoreApplication.translate("budget_widget", u"\u041d\u0435\u0434\u0435\u043b\u044f", None));
+        ___qtablewidgetitem3.setText(QCoreApplication.translate("budget_widget", u"\u0422\u0435\u043a\u0443\u0449\u0430\u044f \u043d\u0435\u0434\u0435\u043b\u044f", None));
         ___qtablewidgetitem4 = self.table_widget.verticalHeaderItem(2)
-        ___qtablewidgetitem4.setText(QCoreApplication.translate("budget_widget", u"\u041c\u0435\u0441\u044f\u0446", None));
+        ___qtablewidgetitem4.setText(QCoreApplication.translate("budget_widget", u"\u0422\u0435\u043a\u0443\u0449\u0438\u0439 \u043c\u0435\u0441\u044f\u0446", None));
     # retranslateUi
 

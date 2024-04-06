@@ -61,17 +61,17 @@
    </property>
    <row>
     <property name="text">
-     <string>День</string>
+     <string>Текущий день</string>
     </property>
    </row>
    <row>
     <property name="text">
-     <string>Неделя</string>
+     <string>Текущая неделя</string>
     </property>
    </row>
    <row>
     <property name="text">
-     <string>Месяц</string>
+     <string>Текущий месяц</string>
     </property>
    </row>
    <column>
