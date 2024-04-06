@@ -1,4 +1,6 @@
+from datetime import datetime
 from inspect import get_annotations
+from pathlib import Path
 import sqlite3
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar, Protocol, Any
@@ -6,69 +8,128 @@ from bookkeeper.repository.abstract_repository import AbstractRepository, T
 
 
 class SQLiteRepository(AbstractRepository[T]):
-    def __init__(self, db_file: str, cls: type) -> None:
-        self.db_file = db_file
-        self.data_type = cls
-        self.table_name = self.data_type.__name__.lower()
-        self.fields = get_annotations(self.data_type, eval_str=True)
-        self.fields.pop('pk')
+    def __init__(self, db_file: Path, cls: type) -> None:
+        self._db_filename = db_file
+        self._data_type = cls
+        self._table_name = self._data_type.__name__.lower()
+        self._fields = get_annotations(self._data_type, eval_str=True)
+
+        with sqlite3.connect(self._db_filename) as connect:
+            cursor = connect.cursor()
+            cursor.execute('PRAGMA foreign_keys = ON')
+            cursor.execute(
+                f'CREATE TABLE IF NOT EXISTS {self._table_name}'
+                + '(pk INTEGER PRIMARY KEY NOT NULL'
+                + " ".join(
+                    f", {name} {self._convert_pytype_to_sql(tpy)}"
+                    for name, tpy in self._fields.items() if name != 'pk'
+                )
+                + ")"
+            )
+
+    @staticmethod
+    def _convert_pytype_to_sql(tpy: type) -> str:
+        if tpy == int:
+            return "INTEGER"
+        if tpy == str:
+            return "TEXT"
+        if tpy == datetime:
+            return "TIMESTAMP"
+        raise ValueError(f"Type {tpy} is not supported")
 
     def add(self, obj: T) -> int:
-        names = ', '.join(self.fields.keys())
-        p = ', '.join("?" * len(self.fields))
-        values = [getattr(obj, x) for x in self.fields]
-        with sqlite3.connect(self.db_file) as con:
-            cursor = con.cursor()
-            cursor.execute(f'INSERT INTO {self.table_name} ({names}) VALUES({p})', values)
-            con.commit()
+        if getattr(obj, "pk", None) != 0:
+            raise ValueError("Trying to add object with filled 'pk' attribute")
+
+        names = ", ".join([name for name in self._fields if name != 'pk'])
+        placeholders = ", ".join("?" * (len(self._fields) - 1))
+
+        values = [getattr(obj, name) for name in self._fields if name != 'pk']
+
+        with sqlite3.connect(self._db_filename) as connect:
+            cursor = connect.cursor()
+            cursor.execute(
+                f"INSERT INTO {self._table_name} ({names}) VALUES ({placeholders});",
+                values,
+            )
             obj.pk = cursor.lastrowid
-            cursor.close()
+
         return obj.pk
 
     def get(self, pk: int) -> T | None:
-        with sqlite3.connect(self.db_file) as con:
-            cursor = con.cursor()
-            cursor.execute(f'SELECT * FROM {self.table_name} LIMIT 1 OFFSET ?', (pk - 1,))
-            res = self.data_type(*cursor.fetchone())
-            res.pk = pk
-            cursor.close()
-        return res
+        """Получить объект по id"""
+        names = ', '.join(self._fields.keys())
+        with sqlite3.connect(self._db_filename,
+                             detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES) as connect:
+            cur = connect.cursor()
+            cur.execute(f"SELECT {names} FROM {self._table_name} WHERE pk = {pk}")
+            res = cur.fetchone()
+        if res is None:
+            return None
+        obj = self._data_type()
+        for i, name in enumerate(self._fields, 0):
+            setattr(obj, name, res[i])
+        return obj
 
     def get_all(self, where: dict[str, Any] | None = None) -> list[T]:
-        with sqlite3.connect(self.db_file) as con:
-            cursor = con.cursor()
+        """
+        Получить все записи по некоторому условию
+        where - условие в виде словаря {'название_поля': значение}
+        если условие не задано (по умолчанию), вернуть все записи
+        """
+        names = ', '.join(self._fields.keys())
+        with sqlite3.connect(self._db_filename,
+                             detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES) as connect:
+            cursor = connect.cursor()
             if where is None:
-                cursor.execute(f'SELECT rowid,  * FROM {self.table_name}')
-                res = [self.data_type(*(list(data[1:]) + [data[0]])) for data in cursor.fetchall()]
-            elif next(iter(where.values())) is None:
-                cursor.execute(f'SELECT rowid, * FROM {self.table_name} WHERE {next(iter(where.keys()))} IS NULL')
-                res = [self.data_type(*(list(data[1:]) + [data[0]])) for data in cursor.fetchall()]
+                cursor.execute(f"SELECT {names} FROM {self._table_name}")
             else:
-                cursor.execute(f'SELECT rowid, * FROM {self.table_name} WHERE {next(iter(where.keys()))} = ?',
-                               (next(iter(where.values())),))
-                res = [self.data_type(*(list(data[1:]) + [data[0]])) for data in cursor.fetchall()]
-            cursor.close()
-        return res
+                where_keys = list(where.keys())
+                where_values = list(where.values())
+                text = f"SELECT {names} FROM {self._table_name} WHERE {where_keys[0]} = ?"
+                for i in range(1, len(where)):
+                    text += f" AND {where_keys[i]} = ?"
+                cursor.execute(text, where_values)
+            res = cursor.fetchall()
+        out = []
+        for element in res:
+            obj = self._data_type()
+            for j, name in enumerate(self._fields, 0):
+                setattr(obj, name, element[j])
+            out.append(obj)
+        return out
 
     def update(self, obj: T) -> None:
-        names = ' = ?, '.join(self.fields.keys()) + ' = ?'
-        values = [getattr(obj, x) for x in self.fields]
-        with sqlite3.connect(self.db_file) as con:
-            cursor = con.cursor()
-            cursor.execute(f'UPDATE {self.table_name} SET {names} WHERE ROWID = {obj.pk}', values)
-            con.commit()
-            cursor.close()
+        """Обновить данные об объекте. Объект должен содержать поле pk."""
+        if getattr(obj, "pk", None) is None:
+            raise ValueError("Object does not exist")
+
+        names = ", ".join(self._fields)
+        placeholders = ", ".join("?" * len(self._fields))
+
+        values = [getattr(obj, key) for key in self._fields]
+
+        with sqlite3.connect(self._db_filename) as connect:
+            cursor = connect.cursor()
+            cursor.execute(
+                f"UPDATE {self._table_name} SET ({names}) = ({placeholders}) WHERE pk={obj.pk}",
+                values,
+            )
+            if connect.total_changes == 0:
+                raise ValueError(f"Object with pk = {obj.pk} does not exist")
 
     def delete(self, pk: int) -> None:
-        with sqlite3.connect(self.db_file) as con:
-            cursor = con.cursor()
-            cursor.execute(f'DELETE FROM {self.table_name} WHERE ROWID = ?', (pk,))
-            con.commit()
-            cursor.close()
+        """Удалить запись"""
+        with sqlite3.connect(self._db_filename) as connect:
+            cur = connect.cursor()
+            cur.execute("PRAGMA foreign_keys = ON")
+            cur.execute(f"DELETE FROM {self._table_name} WHERE pk = {pk}")
+            if connect.total_changes == 0:
+                raise KeyError(f"Object with pk = {pk} does not exist")
 
     def del_all(self) -> None:
-        with sqlite3.connect(self.db_file) as con:
-            cursor = con.cursor()
-            cursor.execute(f"DELETE FROM {self.table_name}")
-            con.commit()
+        with sqlite3.connect(self._db_filename) as connect:
+            cursor = connect.cursor()
+            cursor.execute(f"DELETE FROM {self._table_name}")
+            connect.commit()
             cursor.close()

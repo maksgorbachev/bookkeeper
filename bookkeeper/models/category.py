@@ -15,8 +15,8 @@ class Category:
     родителя (категория, подкатегорией которой является данная) в атрибуте parent.
     У категорий верхнего уровня parent = None
     """
-    name: str
-    parent: int | None = None
+    name: str = ''
+    parent: int = 0
     pk: int = 0
 
     def get_parent(self,

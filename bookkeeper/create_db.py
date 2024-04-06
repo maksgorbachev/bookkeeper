@@ -5,7 +5,7 @@ from bookkeeper.repository.sqlite_repository import SQLiteRepository
 from inspect import get_annotations
 
 
-con = sqlite3.connect("data/budget.db")
+con = sqlite3.connect('data/budget.db')
 cur = con.cursor()
-cur.execute("CREATE TABLE expense (amount, category, expense_date, date, comment)")
-cur.execute("CREATE TABLE category (name, parent)")
+cur.execute('CREATE TABLE expense (amount, category, expense_date, date, comment)')
+cur.execute('CREATE TABLE category (name, parent)')

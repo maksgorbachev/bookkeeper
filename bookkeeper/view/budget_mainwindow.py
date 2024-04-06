@@ -14,7 +14,7 @@ class BudgetMainWindow(QMainWindow):
     ):
         super().__init__()
         self.setFixedSize(680, 800)
-        self.setWindowTitle("The Bookkeeper App")
+        self.setWindowTitle('The Bookkeeper App')
 
         central_widget: QWidget = QWidget(self)
         central_widget.setGeometry(0, 0, self.width(), self.height())
