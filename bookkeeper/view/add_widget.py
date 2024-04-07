@@ -48,6 +48,7 @@ class AddWidget(QWidget):  # pylint: disable=too-few-public-methods
 
     def _handler_button_add(self):
         price: int = self._ui.spb_amount.value()
+        self._ui.spb_amount.setValue(0)
 
         expense = self._ui.date_time_edit.dateTime()
         category_name = self._ui.cmb_category.currentText()
