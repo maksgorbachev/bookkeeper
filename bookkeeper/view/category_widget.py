@@ -31,22 +31,29 @@ class CategoryWidget(QWidget):
 
         self._update_cache_categories()
 
+    def _get_children(self, parent_id: int) -> list[Category]:
+        return self._category.get_all(where={'parent': parent_id})
+
     def _build_tree_category(self):
         self._ui.tree_category.clear()
-        tree_widgets: list[QTreeWidgetItem] = []
-        for _ in self._category.get_all():
-            tree_widgets.append(QTreeWidgetItem())
-        for i, row in enumerate(self._category.get_all()):
-            tree_widgets[i].addChildren(
-                [
-                    tree_widgets[cat.pk - 1]
-                    for cat in row.get_subcategories(self._category)
-                ]
-            )
-            tree_widgets[i].setText(0, row.name)
+        self._ui.tree_category.setHeaderLabels(['Категории'])
 
-        self._ui.tree_category.setColumnCount(1)
-        self._ui.tree_category.addTopLevelItems(tree_widgets)
+        root = self._category.get(1)
+        if root is None:
+            return
+        tree_root: QTreeWidgetItem = QTreeWidgetItem([root.name])
+
+        tree_root.addChildren(self._build_node_tree_category(root))
+
+        self._ui.tree_category.addTopLevelItem(tree_root)
+
+    def _build_node_tree_category(self, node: Category) -> list[QTreeWidgetItem]:
+        items: list[QTreeWidgetItem] = []
+        for child in self._get_children(node.pk):
+            item = QTreeWidgetItem([child.name])
+            item.addChildren(self._build_node_tree_category(child))
+            items.append(item)
+        return items
 
     def _update_cache_categories(self):
         categories: list[Category] = self._category.get_all()
